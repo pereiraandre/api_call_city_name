@@ -11,7 +11,6 @@ class WeatherCubit extends Cubit<WeatherState> {
 
 
   Future<void> getWeather(String city) async {
-    emit(WeatherLoading());
 
       var lastState = state;
       emit(WeatherLoading());
