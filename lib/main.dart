@@ -76,11 +76,13 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: (context, state) {
                 String temperature = '0º';
                 String city = '';
+                String keepWeather = '';
                 if (state is WeatherLoading) {
                   return const CircularProgressIndicator();
                 } else if (state is WeatherLoaded) {
                   temperature = state.weather.temp.toString();
                   city = state.weather.name.toString();
+                  keepWeather = state.keepWeather.toString();
                 }
                 return Column(
                   children: [
@@ -91,6 +93,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     Text(
                       temperature,
                       style: const TextStyle(fontSize: 60.0),
+                    ),
+                    Text(
+                      keepWeather,
+                      style: const TextStyle(fontSize: 40.0),
                     ),
                   ],
                 );
