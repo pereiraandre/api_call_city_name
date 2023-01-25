@@ -1,3 +1,4 @@
+import 'package:api_call_city_name/data_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<WeatherCubit>(
-      create: (context) => WeatherCubit(),
+      create: (context) => WeatherCubit(LocalStorage()),
       child: const MaterialApp(
         home: MyHomePage(),
       ),
@@ -61,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const Spacer(),
             BlocConsumer<WeatherCubit, WeatherState>(
+              bloc: BlocProvider.of<WeatherCubit>(context)..getLastValues(),
               listenWhen: (oldState, newState) => newState is WeatherError,
               listener: (context, state) {
                 if (state is WeatherError) {
@@ -70,38 +72,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
               },
               buildWhen: (oldState, newState) =>
+              newState is WeatherInitial ||
                   newState is WeatherLoading ||
-                  newState is WeatherLoaded ||
-                  newState is WeatherError,
+                  newState is WeatherLoaded,
               builder: (context, state) {
-                String temperature = '0º';
-                String city = '';
-                String keepWeather = '';
-                if (state is WeatherLoading) {
+                 if (state is WeatherLoading) {
                   return const CircularProgressIndicator();
                 } else if (state is WeatherLoaded) {
-                  temperature = state.weather.temp.toString();
-                  city = state.weather.name.toString();
-                  keepWeather = state.keepWeather.toString();
-                }
-                return Column(
-                  children: [
-                    Text(
-                      city,
-                      style: const TextStyle(fontSize: 60.0),
-                    ),
-                    Text(
-                      temperature,
-                      style: const TextStyle(fontSize: 60.0),
-                    ),
-                    Text(
-                      keepWeather,
-                      style: const TextStyle(fontSize: 40.0),
-                    ),
-                  ],
-                );
-              },
-            ),
+                  return _LoadedWidget(name: state.weather?.name,
+                      temperature: state.weather?.temp,
+                  lastTemp: state.lastTemp,
+                  lastCity: state.lastCity,);
+                }return Container();
+
+                 }),
             const Spacer(),
             ElevatedButton(
                 onPressed: () {
@@ -116,5 +100,48 @@ class _MyHomePageState extends State<MyHomePage> {
         ), // This trailing comma makes auto-formatting nicer for build methods.
       )),
     );
+  }
+}
+
+class _LoadedWidget extends StatelessWidget {
+  const _LoadedWidget({
+    Key? key,
+    this.name,
+    this.temperature,
+    this.lastCity,
+    this.lastTemp
+  }) : super(key: key);
+
+  final String? name;
+  final double? temperature;
+  final String? lastCity;
+  final String? lastTemp;
+
+  @override
+  Widget build(BuildContext context) {
+       return Column(
+         crossAxisAlignment: CrossAxisAlignment.center,
+         children: [
+           Text(
+               name ??
+           'Insert your first city for today!',
+             style: const TextStyle(fontSize: 60.0),
+             textAlign: TextAlign.center,
+           ),
+           if(temperature != null)Text(
+             temperature.toString(),
+             style: const TextStyle(fontSize: 60.0),
+           ),
+           SizedBox(height: 40,),
+           if(lastCity != null)Text(
+             lastCity!,
+             style: const TextStyle(fontSize: 40.0),
+           ),
+           if(lastTemp != null)Text(
+             lastTemp!,
+             style: const TextStyle(fontSize: 40.0),
+           ),
+         ],
+       );
   }
 }
